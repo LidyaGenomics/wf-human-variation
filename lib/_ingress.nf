@@ -111,7 +111,6 @@ workflow ingress {
             "analyse_fail": false,
             "keep_unaligned": true,
             "stats": false,
-            "watch_path": false
         ])
         // Check that we have a single BAM/folder with BAMs in it.
         // by counting how many entries are in the channel.
