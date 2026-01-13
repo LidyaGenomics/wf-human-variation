@@ -180,9 +180,12 @@ workflow snp {
             haplotagged_ctg_bams = post_clair_contig_haplotag.out.phased_bam
 
             // get a file of sequence names for all SQ that were haplotagged by post_clair_contig_haplotag
+            // it is the responsibility of downstream to ensure this file is sorted
+            //  when used with comm, but we set sort:true here explicitly to ensure
+            //  that the fosn is cached to avoid an unnecessary resume [CW-6898]
             haplotagged_fosn = \
                 haplotagged_ctg_bams.map{ meta, contig, xam, xai -> contig }
-                | collectFile(name: "haplotagged.fosn", newLine: true, sort: false)
+                | collectFile(name: "haplotagged.fosn", newLine: true, sort: true)
             // we'll take this file of haplotagged contigs and pull out a
             //  subset BAM for each SQ in the input XAM that does not appear
             //  as well as a bonus BAM for unaligned reads. we'll mix this
