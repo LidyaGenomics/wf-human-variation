@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 def longphase_memory = [8.GB, 32.GB, 56.GB]
 def whatshap_memory = [4.GB, 8.GB, 12.GB]
 def haptag_memory = [4.GB, 8.GB, 12.GB]
@@ -132,7 +130,7 @@ process aggregate_pileup_variants {
     cpus 2
     memory { aggregate_memory[task.attempt - 1] }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
 
     input:
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -200,7 +198,7 @@ process phase_contig {
     cpus 4
     memory { longphase_memory[task.attempt - 1] }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
 
     input:
         tuple val(contig), path(het_snps), path(het_snps_tbi), path(xam), path(xam_idx), val(xam_meta), path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -382,7 +380,7 @@ process aggregate_full_align_variants {
     cpus 2
     memory { aggregate_memory[task.attempt - 1] }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
 
     input:
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -470,7 +468,7 @@ process post_clair_phase_contig {
     // Define memory from phasing tool and number of attempt
     memory { whatshap_memory[task.attempt - 1] }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
 
     input:
         tuple val(xam_meta), val(contig),
@@ -513,7 +511,7 @@ process post_clair_contig_haplotag {
     // Define memory from phasing tool and number of attempt
     memory { haptag_memory[task.attempt - 1] }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
 
     input:
         tuple val(contig),
@@ -546,7 +544,7 @@ process aggregate_all_variants{
     cpus 4
     memory { 8.GB * task.attempt }
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
         tuple val(xam_meta), path("merge_output/*")
@@ -605,7 +603,7 @@ process refine_with_sv {
     cpus 4
     memory { 8.GB * task.attempt - 1.GB }
     maxRetries 1
-    errorStrategy = {task.exitStatus in [1,137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [1,137,140] ? 'retry' : 'finish'}
 
     input:
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH) 
@@ -686,6 +684,7 @@ process output_snp {
         file fname
     output:
         file fname
+    script:
     """
     echo "Writing output files"
     """
@@ -711,6 +710,7 @@ process vcfStats {
         tuple val(xam_meta), path(vcf), path(index)
     output:
         tuple val(xam_meta), path("variants.stats")
+    script:
     """
     bcftools stats --threads ${task.cpus - 1} $vcf > variants.stats
     """

@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 process callCNV {
     label "spectre"
     cpus 2

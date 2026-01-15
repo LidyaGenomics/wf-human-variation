@@ -30,7 +30,7 @@ process minimap2_alignment {
     cpus {params.ubam_map_threads + params.ubam_sort_threads + params.ubam_bam2fq_threads}
     memory { (32.GB * task.attempt) - 1.GB }
     maxRetries 1
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         path reference
         tuple val(meta), path(reads), path(reads_idx)

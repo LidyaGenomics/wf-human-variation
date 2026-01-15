@@ -63,8 +63,11 @@ workflow str {
     // bam_channel.xam_meta is per contig (containing sq: and id:) 
     // so just use meta.alias to combine with the grouped branched_annotation vcfs
     merged_vcf = concat_str_vcfs(
-        bam_channel.map{xam, xai, meta ->   ['alias': meta.alias] }.unique().
-        combine(branched_annotations.stranger_vcfs_and_tbis).groupTuple(),
+        bam_channel
+          | map { xam, xai, meta -> ['alias': meta.alias] }
+          | unique
+          | combine(branched_annotations.stranger_vcfs_and_tbis)
+          | groupTuple,
         "wf_str"
     ).final_vcf
 

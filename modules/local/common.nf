@@ -1,11 +1,9 @@
-import groovy.json.JsonBuilder
-
 //NOTE grep MOSDEPTH_TUPLE if changing output tuple
 process mosdepth {
     cpus 4
     memory {4.GB * task.attempt}
     maxRetries 2
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple path(xam), path(xam_idx), val(xam_meta)
         file (target_bed)
@@ -125,6 +123,7 @@ process publish_artifact {
         file fname
     output:
         file fname
+    script:
     """
     echo "Writing output files"
     """
@@ -151,7 +150,7 @@ process getGenome {
     input:
         tuple path(xam), path(xam_idx), val(xam_meta)
     output:
-        env genome_build, emit: genome_build optional true
+        env genome_build, emit: genome_build, optional: true
      script:
         // set flags for subworkflows that have genome build restrictions
         def str_arg = params.str ? "--str" : ""
@@ -194,7 +193,7 @@ process downsampling {
         tuple val(to_downsample), val(downsampling_rate)
         tuple val(xam_fmt), val(xai_fmt)
     output:
-        tuple path("downsampled.${xam_fmt}"), path("downsampled.${xam_fmt}.${xai_fmt}"), val(xam_meta), emit: xam optional true
+        tuple path("downsampled.${xam_fmt}"), path("downsampled.${xam_fmt}.${xai_fmt}"), val(xam_meta), emit: xam, optional: true
     script:
         """
         samtools view \\
@@ -618,6 +617,7 @@ process output_cnv {
         path fname
     output:
         path fname
+    script:
     """
     echo "Writing output files"
     """

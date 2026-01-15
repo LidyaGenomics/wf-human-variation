@@ -88,6 +88,7 @@ process decompress_ref {
         path "ref.fa.gz"
     output:
         path "ref.fa", emit: decompressed_ref
+    script:
     """
     gzip -df ref.fa.gz
     """

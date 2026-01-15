@@ -5,7 +5,7 @@ process sample_probs {
     cpus 4
     memory { 8.GB * task.attempt - 1.GB }
     maxRetries 1
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple path(xam), path(xam_index), val(meta)
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -24,7 +24,7 @@ process modkit {
     cpus params.modkit_threads
     memory {(1.GB * params.modkit_threads * task.attempt) + 3.GB}
     maxRetries 1
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple val(meta), path(xam), path(xai)
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -55,7 +55,7 @@ process modkit_phase {
     // Phasing is a bit more greedy for memory. Use 2.GB/core + buffer.
     memory {(2.GB * params.modkit_threads * task.attempt) + 3.GB}
     maxRetries 1
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple val(meta), path(xam), path(xai)
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)

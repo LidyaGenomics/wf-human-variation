@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 process call_str {
     // first subset the repeats BED file, then use this to do straglr genotyping
     // sex comes from either params.sex or from inferred_sex
@@ -214,6 +212,7 @@ process output_str {
         path fname
     output:
         path fname
+    script:
     """
     echo "Writing output files"
     """

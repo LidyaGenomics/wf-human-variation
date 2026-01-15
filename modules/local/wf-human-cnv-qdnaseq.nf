@@ -1,18 +1,15 @@
-import groovy.json.JsonBuilder
-
 // fix_vcf was unglued to avoid installing base deps in CNV container
 process callCNV {
     label "wf_cnv"
     cpus 1
     memory { 16.GB * task.attempt }
     maxRetries 1
-    errorStrategy = {task.exitStatus in [137,140] ? 'retry' : 'finish'}
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     // publish everything except the cnv_vcf to qdna_seq directory
-    publishDir = [
+    publishDir \
         path: { "${params.out_dir}/qdna_seq" },
         mode: 'copy',
         saveAs: { filename -> filename.toString() ==~ /.*vcf\.gz.*/ ? null : filename }
-    ]
     input:
         tuple path(bam), path(bai), val(xam_meta)
         val(genome_build)

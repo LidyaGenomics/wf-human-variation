@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - ezCharts plotting library has been updated to 0.15.1, there are no user facing changes to plots.
   - Fastcat FASTQ pre-processing program has been updated to 0.24.2, it is more robust to malformed FASTQ input.
   - CHANGELOG to be compliant with our formatting rules.
+- Cleaned up syntax for optional outputs defined in common.nf (@robsyme, #296), and other out-of-spec syntax preventing parsing by the Nextflow language server.
 ### Fixed
 - `cat_haplotagged_contigs` re-run on resume unnecessarily (@raonyguimaraes, #295)
 

@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 // NOTE VCF entries for alleles with no support are removed to prevent them from
 //      breaking downstream parsers that do not expect them
 // --input-exclude-flags 2308: Remove unmapped (4), non-primary (256) and supplemental (2048) alignments
@@ -169,6 +167,7 @@ process output_sv {
         path fname
     output:
         path fname
+    script:
     """
     echo "Writing output files"
     """

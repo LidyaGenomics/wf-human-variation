@@ -1,5 +1,3 @@
-import groovy.json.JsonBuilder
-
 include {
     sniffles2;
     filterCalls;
