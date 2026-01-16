@@ -112,14 +112,6 @@
       "optional": true,
       "type": "per-sample"
     },
-    "mod-bedmethyl-ungroup": {
-      "filepath": "{{ alias }}.wf_mods.ungrouped.bedmethyl.gz",
-      "title": "Modified bases BEDMethyl (ungrouped)",
-      "description": "BED file with the aggregated modification counts of non-haplotagged reads for the sample.",
-      "mime-type": "application/gzip",
-      "optional": true,
-      "type": "per-sample"
-    },
     "str-vcf": {
       "filepath": "{{ alias }}.wf_str.vcf.gz",
       "title": "Short tandem repeat VCF",
