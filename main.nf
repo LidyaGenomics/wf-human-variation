@@ -585,9 +585,18 @@ workflow {
         .subscribe {
             dp_pass, dp, bam, bai, meta ->
             // check where it failed
-            def fail_depth = !meta.has_mapped_reads ? "No mapped reads." : dp < params.bam_min_coverage ? "Depth: ${dp} < ${params.bam_min_coverage}" : "Unknown."
-            // Log where it failed
-            log.error "File ${bam.getName()} will not be processed by the workflow because:\n - ${fail_depth}\n"
+            def fail_depth_reason = !meta.has_mapped_reads ? "no mapped reads" : dp < params.bam_min_coverage ? "depth: ${dp} < ${params.bam_min_coverage}" : "failed for unknown reason"
+            // Raise the alarm quite obviously but do not error the workflow -- we'll successfully issue a failed report
+            String fail_depth_msg = """\
+            ################################################################################
+            # INPUT DATA PROBLEM
+            An input file has insufficient coverage for analysis and will not be processed
+            by the workflow:
+
+            ${bam.getName()} has ${fail_depth_reason}
+            ################################################################################
+            """.stripIndent()
+            log.error fail_depth_msg
         }
     filter.not_pass
         .map{it ->

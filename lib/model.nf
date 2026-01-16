@@ -24,14 +24,17 @@ workflow detect_basecall_model {
             | flatten  // squash lists
             | unique
 
-        // Ensure that the two BAM have the same basecaller configuration.
-        // Check that there is exactly one metamap.
-        // Specific for somvar: fail also with >1 metadata, as the two BAM need the
-        // same model.
+        // Ensure that all BAMs in the bam_channel have the same basecaller configuration.
+        // If the bam_channel is empty (ie. no pass BAMs), no messages or errors will occur.
         metamap_basecaller_cfg
                 | count
-                | map { int n_models ->
-                    if (n_models == 0){
+                | combine(bam_channel | count)
+                | map { int n_models, int n_bams ->
+                    if (n_bams == 0) {
+                        // emit a debug warning but don't halt: this may be OK
+                        // we'll worry about this in the relevant workflows main.nf if it is fatal
+                        log.warn "There were no valid input files from which to read a basecaller model, your input data likely has insufficient coverage for analysis."
+                    } else if (n_models == 0){
                         if (params.override_basecaller_cfg) {
                             log.info "No basecaller models found in the input alignment header, falling back to the model provided with --override_basecaller_cfg: ${params.override_basecaller_cfg}"
                         }

@@ -84,9 +84,9 @@ def main(args):
     if args.low_cov:
         with report.add_section("Sample failing", "Fail"):
             p(
-                f"""This dataset was not processed by the workflow as it did not
-                meet the minimum bam coverage of {args.low_cov}x required.
-                """)
+                "This dataset was not processed by the workflow as it did not ",
+                f"meet the minimum bam coverage of {args.low_cov}x required."
+            )
 
     # Add at-a-glance section with intro
     fields = {

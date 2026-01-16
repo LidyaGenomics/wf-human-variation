@@ -70,6 +70,7 @@ docker-run:
                 "multibam",
                 "multibam-ingress-case4-fail",
                 "multibam-ingress-case4-sample_name",
+                "multibam-fails-with-lowdepth",
                 "haplocheck_contaminated",
                 "multimods",
                 "multimods_realign",
@@ -148,6 +149,29 @@ docker-run:
                 grep '"Reads mapped": 7154' wf-human-variation/HOOT.stats.json &&
                 grep '"Unmapped reads": 9' wf-human-variation/HOOT.stats.json &&
                 grep '"Reads mapped (%)": 99\.87' wf-human-variation/HOOT.stats.json
+
+        # This test takes multiple input BAM files, concatenates them and process them.
+        - if: $MATRIX_NAME == "multibam-fails-with-lowdepth"
+          variables:
+              NF_BEFORE_SCRIPT: "mkdir -p ${CI_PROJECT_NAME}/data/ && wget -q -O ${CI_PROJECT_NAME}/data/demo_data.tar.gz https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-somatic-variation/wf-somatic-variation-demo.tar.gz && \
+              tar -xzvf ${CI_PROJECT_NAME}/data/demo_data.tar.gz -C ${CI_PROJECT_NAME}/data/ && \
+              wget -q -O ${CI_PROJECT_NAME}/data/wf-somatic-variation-demo/GCA_000001405.15_GRCh38_no_alt_analysis_set.fa.gz https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/ref/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz; echo 'process { withName:minimap2_alignment { memory = '24.GB' } }' > ${CI_PROJECT_NAME}/data/mm2.config && \
+              wget -q -O ${CI_PROJECT_NAME}/data/wf-somatic-variation-demo/20240213_0951_0-AN-DN__abcde123/bam_pass/normal/unmapped.bam https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/misc/giab_2025.01-HG002-PAW70337.unmapped.bam"
+              NF_IGNORE_PROCESSES: "aggregate_all_variants,aggregate_full_align_variants,aggregate_pileup_variants,cat_haplotagged_contigs,create_candidates,evaluate_candidates,filterCalls,get_qual_filter,hap,make_chunks,makeReport,merge_pileup_and_full_vars,output_snp,output_sv,phase_contig,phase_gvcf,pileup_variants,post_clair_contig_haplotag,post_clair_phase_contig,refine_with_sv,report,select_het_snps,sniffles2,sortVCF,vcfStats"
+              NF_WORKFLOW_OPTS: "--snp true --sv true --mod --cnv false --str false \
+              --bed ${CI_PROJECT_NAME}/data/wf-somatic-variation-demo/demo.bed \
+              --bam ${CI_PROJECT_NAME}/data/wf-somatic-variation-demo/20240213_0951_0-AN-DN__abcde123/bam_pass/normal/ \
+              --ref ${CI_PROJECT_NAME}/data/wf-somatic-variation-demo/GCA_000001405.15_GRCh38_no_alt_analysis_set_chr20.fna \
+              --sample_name HOOT --ubam_map_threads 2 --ubam_sort_threads 1 --ubam_bam2fq_threads 1 --bam_min_coverage 1000 \
+              --annotation false --modkit_threads 4 \
+              --override_basecaller_cfg dna_r10.4.1_e8.2_400bps_sup@v4.0.0 \
+              -c ${CI_PROJECT_NAME}/data/mm2.config"
+              ASSERT_NEXTFLOW_FAILURE: "" # the workflow fails successfully in low depth cases
+              AFTER_NEXTFLOW_CMD: >
+                  grep 'There were no valid input files from which to read a basecaller model, your input data likely has insufficient coverage for analysis' .nextflow.log &&
+                  grep 'An input file has insufficient coverage for analysis and will not be processed' .nextflow.log &&
+                  grep -vq 'Your input alignments does not indicate the basecall model in the header' .nextflow.log &&
+                  grep 'This dataset was not processed by the workflow as it did not meet the minimum bam coverage of 1000\.0x required.' ${CI_PROJECT_NAME}/HOOT.wf-human-alignment-report.html
 
         # This takes the multibam, and uses the two samples to check that the samples explode
         - if: $MATRIX_NAME == "multibam-ingress-case4-fail"
