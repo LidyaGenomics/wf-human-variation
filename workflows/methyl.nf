@@ -36,16 +36,14 @@ process modkit {
     """
     modkit pileup \\
         ${xam} \\
-        ${meta.alias}.wf_mods.${meta.sq}.bedmethyl \\
+        ${meta.alias}.wf_mods.${meta.sq}.bedmethyl.gz \\
+        --modified-bases 5mC 5hmC \\
         --ref ${ref} \\
         --region ${meta.sq} \\
-        --interval-size 1000000 \\
         --log-filepath modkit.log \\
         ${meta.probs} \\
+        --bgzf \\
         --threads ${task.cpus} ${options}
-    
-    # Compress all
-    bgzip ${meta.alias}.wf_mods.${meta.sq}.bedmethyl
     """
 }
 
@@ -62,7 +60,7 @@ process modkit_phase {
         val options
     // some of the outputs can be optional based on the tagging (they can all be from one hap, either haps, or none)
     output:
-        tuple val(meta), val('ungrouped'), path("${meta.alias}/${meta.alias}*ungrouped.bedmethyl.gz"), emit: modkit_H0, optional: true
+        tuple val(meta), val('*'), path("${meta.alias}/${meta.alias}*combined.bedmethyl.gz"), emit: modkit_Hstar, optional: true
         tuple val(meta), val('1'), path("${meta.alias}/${meta.alias}*1.bedmethyl.gz"), emit: modkit_H1, optional: true
         tuple val(meta), val('2'), path("${meta.alias}/${meta.alias}*2.bedmethyl.gz"), emit: modkit_H2, optional: true
 
@@ -73,23 +71,23 @@ process modkit_phase {
     modkit pileup \\
         ${xam} \\
         ${meta.alias} \\
+        --modified-bases 5mC 5hmC \\
         --ref ${ref} \\
-        --partition-tag HP \\
-        --interval-size 1000000 \\
+        --phased \\
         --prefix ${meta.alias}.wf_mods.${meta.sq} \\
         --log-filepath modkit.log \\
         --region ${meta.sq} \\
         ${meta.probs} \\
+        --bgzf \\
         --threads ${task.cpus} ${options}
     
     # Compress all
     for i in `ls ${meta.alias}/`; do
-        root_name=\$( basename \$i '.bed' )
-        # modkit saves the file as meta.alias.wf_mods_haplotype.bed
+        root_name=\$( basename \$i '.bed.gz' )
+        # modkit saves the file as meta.alias.wf_mods.sq_haplotype.bed.gz
         # create a new name with the patter meta.alias.wf_mods.haplotype.bedmethyl
         new_name=\$( echo \${root_name} | sed 's/wf_mods\\.${meta.sq}_/wf_mods\\.${meta.sq}\\./' )
-        mv ${meta.alias}/\${root_name}.bed ${meta.alias}/\${new_name}.bedmethyl
-        bgzip ${meta.alias}/\${new_name}.bedmethyl
+        mv ${meta.alias}/\${root_name}.bed.gz ${meta.alias}/\${new_name}.bedmethyl.gz
     done
     """
 }
@@ -200,7 +198,7 @@ workflow mod {
             // Process the chunked haplotagged BAM file.
             modkit_out = modkit_phase(modkit_bam, reference.collect(), modkit_options)
             // Concatenate the haplotypes.
-            out = modkit_out.modkit_H0 
+            out = modkit_out.modkit_Hstar
                 | mix(modkit_out.modkit_H1, modkit_out.modkit_H2)
                 | map{ meta, group, bedmethyl -> [["alias": meta.alias], group, bedmethyl]}
                 | groupTuple(by: [0,1])
