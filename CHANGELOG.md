@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Updated to modkit v0.6.0 to improve performance of modkit pileup processes. `modkit_phase` processes run 10x faster on average.
+- Updated to modkit v0.6.1 to improve performance of modkit pileup processes. `modkit_phase` processes run 10x faster on average.
   - When running with `--mod --phased`, modkit and wf-human-variation no longer outputs "ungrouped" modification counts. Instead, the `{{ alias }}.wf_mods.bedmethyl.gz` will contain counts tabulated from all records.
 - Updated to wf-template v5.7.0 to maintain compliance with our latest wf-template standard, changing:
   - Pipeline overview now appears before pipeline parameters in README.
