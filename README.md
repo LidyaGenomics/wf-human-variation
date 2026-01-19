@@ -20,6 +20,11 @@ The wf-human-variation workflow consolidates the small variant calling from the 
 This pipeline performs the steps of the four pipelines simultaneously and the results are generated and output in the same
 way as they would have been had the pipelines been run separately.
 
+<figure>
+<img src="docs/images/wf-human-variation.drawio.png" alt="wf-human-variation overview schematic."/>
+<figcaption>Schematic depicting wf-human-variation workflow.</figcaption>
+</figure>
+
 The tools embedded in individual sub-workflows within wf-human-variation are specifically designed for use with whole-genome Oxford Nanopore Technologies sequencing data. While 20x average coverage is the absolute minimum requirement for the workflow to run, we recommend an average coverage above 30x to ensure optimal performance. Usage below the minimum coverage may cause the workflow to terminate with an error, or yield unexpected outcomes.
 
 
