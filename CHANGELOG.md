@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CHANGELOG to be compliant with our formatting rules.
 - The error when an input file has insufficient coverage for analysis and will not be processed by the workflow has been made more obvious in the log.
 - Cleaned up syntax for optional outputs defined in common.nf (@robsyme, #296), and other out-of-spec syntax preventing parsing by the Nextflow language server.
+- ClinVar database updated to version 20260114.
 ### Fixed
 - `cat_haplotagged_contigs` re-run on resume unnecessarily (@raonyguimaraes, #295)
 - Misleading "Input data error" implying the basecalling model could not be detected from an input when actually the input was discarded for having a depth below the `bam_min_coverage` threshold.
