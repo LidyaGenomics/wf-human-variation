@@ -90,7 +90,7 @@
     },
     "mod-bedmethyl": {
       "filepath": "{{ alias }}.wf_mods.bedmethyl.gz",
-      "title": "Modified bases BEDMethyl",
+      "title": "Modified bases bedMethyl",
       "description": "BED file with the aggregated modification counts for the sample.",
       "mime-type": "application/gzip",
       "optional": true,
@@ -98,7 +98,7 @@
     },
     "mod-bedmethyl-hap1": {
       "filepath": "{{ alias }}.wf_mods.1.bedmethyl.gz",
-      "title": "Modified bases BEDMethyl (haplotype 1)",
+      "title": "Modified bases bedMethyl (haplotype 1)",
       "description": "BED file with the aggregated modification counts for haplotype 1 of the sample.",
       "mime-type": "application/gzip",
       "optional": true,
@@ -106,8 +106,32 @@
     },
     "mod-bedmethyl-hap2": {
       "filepath": "{{ alias }}.wf_mods.2.bedmethyl.gz",
-      "title": "Modified bases BEDMethyl (haplotype 2)",
+      "title": "Modified bases bedMethyl (haplotype 2)",
       "description": "BED file with the aggregated modification counts for haplotype 2 of the sample.",
+      "mime-type": "application/gzip",
+      "optional": true,
+      "type": "per-sample"
+    },
+    "mod-bedmethyl-5mc-bigwig": {
+      "filepath": "{{ alias }}.wf_mods.5mC.bw",
+      "title": "5mC bigWig",
+      "description": "bigWig for visualisation of aggregated 5mC modification counts.",
+      "mime-type": "application/gzip",
+      "optional": true,
+      "type": "per-sample"
+    },
+    "mod-bedmethyl-hap1-5mc-bigwig": {
+      "filepath": "{{ alias }}.wf_mods.1-5mC.bw",
+      "title": "5mC bigWig (haplotype 1)",
+      "description": "bigWig for visualisation of aggregated 5mC modification counts for haplotype 1 of the sample.",
+      "mime-type": "application/gzip",
+      "optional": true,
+      "type": "per-sample"
+    },
+    "mod-bedmethyl-hap2-5mc-bigwig": {
+      "filepath": "{{ alias }}.wf_mods.2-5mC.bw",
+      "title": "5mC bigWig (haplotype 2)",
+      "description": "bigWig for visualisation of aggregated 5mC modification counts for haplotype 2 of the sample.",
       "mime-type": "application/gzip",
       "optional": true,
       "type": "per-sample"

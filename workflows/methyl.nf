@@ -99,7 +99,7 @@ process concat_bedmethyl {
     input:
         tuple val(meta), val(group), path("bedmethyls/*")
     output:
-        path "${meta.alias}.wf_mods.*bedmethyl.gz"
+        tuple val(meta), val(group), path("${meta.alias}.wf_mods.*bedmethyl.gz")
 
     script:
     // Concatenate the bedMethyl, sort them and compress them
@@ -110,6 +110,37 @@ process concat_bedmethyl {
         bgzip -c -@ ${task.cpus} > ${meta.alias}.wf_mods.${label}bedmethyl.gz
     """
 }
+
+process modkit_tobigwig {
+    label "wf_human_mod"
+    cpus 4
+    memory 2.GB
+    input:
+        tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
+        tuple val(meta), val(group), path(bedmethyl), val(mod)
+    output:
+        tuple val(meta), val(group), val(mod), path("${meta.alias}.wf_mods.*.bw")
+    publishDir \
+        path: "${params.out_dir}",
+        mode: 'copy'
+
+    script:
+    def mod_code
+    def mod_label
+    if(mod.contains(':')) {
+        (mod_code, mod_label) = mod.split(':', 2)
+    }
+    else {
+        mod_code = mod_label = mod
+    }
+    def label = group != '*' ? "${group}-${mod_label}" : "${mod_label}"
+    // switch on inverted counting for negative strand if using force_strand
+    def strand_values_arg = params.force_strand ? "--negative-strand-values" : ""
+    """
+    zcat ${bedmethyl} | modkit bm tobigwig --sizes ${ref_idx} -t ${task.cpus} --mod-codes ${mod_code} ${strand_values_arg} - ${meta.alias}.wf_mods.${label}.bw
+    """
+}
+
 
 // Check that the bam has modifications
 process validate_modbam {
@@ -198,18 +229,38 @@ workflow mod {
             // Process the chunked haplotagged BAM file.
             modkit_out = modkit_phase(modkit_bam, reference.collect(), modkit_options)
             // Concatenate the haplotypes.
-            out = modkit_out.modkit_Hstar
+            bedmethyl = modkit_out.modkit_Hstar
                 | mix(modkit_out.modkit_H1, modkit_out.modkit_H2)
                 | map{ meta, group, bedmethyl -> [["alias": meta.alias], group, bedmethyl]}
                 | groupTuple(by: [0,1])
                 | concat_bedmethyl
         } else {
             // Run modkit.
-            out = modkit(modkit_bam, reference.collect(), modkit_options)
+            bedmethyl = modkit(modkit_bam, reference.collect(), modkit_options)
                 | map{ meta, group, bedmethyl -> [["alias": meta.alias], group, bedmethyl]}
                 | groupTuple(by: [0,1])
                 | concat_bedmethyl
         }
+        // make bigwig from the (un)phased bedmethyls
+        // currently only provide 5mC by default for now as that is what most users want
+        // mod codes use basemod codes from SAMTags, we label the files with the more
+        //  human friendly abbreviation by sending <mod_code>:<mod_label> to tobigwig
+        bigwig = modkit_tobigwig(
+            reference.collect(),
+            bedmethyl | combine(["m:5mC"]),
+        )
+
+        // IGV tracks
+        // send H0, unless phased then send H1, H2
+        // TODO(CW-6944) send bigwig files to IGV instead
+        igv = bedmethyl
+          | filter { _meta, group, _bedmethyl ->
+              (!params.phased && group == "*") || (params.phased && group != "*")
+          }
+          | map { _meta, _group, bedmethyl -> bedmethyl }
+          | collect
     emit:
-        modkit = out
+        bedmethyl = bedmethyl | map { _meta, _group, bedmethyl -> bedmethyl } | collect
+        bigwig = bigwig | map { _meta, _group, _mod, bigwig -> bigwig } | collect
+        igv = igv
 }

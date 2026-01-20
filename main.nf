@@ -875,9 +875,11 @@ workflow {
             ref_channel,
             run_haplotagging  // Define if the data are haplotagged.
         )
-        mod_stats = results.modkit.flatten()
+        mod_bedmethyl = results.bedmethyl
+        mod_igv = results.igv
     } else {
-        mod_stats = Channel.empty()
+        mod_bedmethyl = Channel.empty()
+        mod_igv = Channel.empty()
     }
 
     // wf-human-cnv
@@ -972,10 +974,6 @@ workflow {
                 }
             }
             | mix(
-                snp_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                sv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                str_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                cnv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
                 // set correct BAM for IGV depending on whether haplotagging requested
                 // or alignment carried out - if neither then fall back to the original
                 // unchanged BAM
@@ -988,8 +986,11 @@ workflow {
                         ] 
                     }
                 ),
-                // haplotagged bedMethyl
-                mod_stats.take(2)
+                snp_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
+                sv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
+                str_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
+                cnv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
+                mod_igv,
             )
             | igv
     } else {
@@ -1022,7 +1023,7 @@ workflow {
             mosdepth_stats.map{ meta, bed, dist, threshold -> [bed, dist, threshold]}.flatten(),
             mosdepth_summary.flatten(),
             mosdepth_perbase.flatten(),
-            mod_stats.flatten(),
+            mod_bedmethyl.flatten(),
             report_pass.flatten(),
             report_fail.flatten(),
             final_json.flatten(),

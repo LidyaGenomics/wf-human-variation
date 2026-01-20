@@ -13,9 +13,12 @@ Output files may be aggregated including information for all samples or provided
 | Structural variant SNF | {{ alias }}.wf_sv.snf | SNF file with the SVs for the sample, for onward multi-sample SV calling. | per-sample |
 | Copy number variants VCF | {{ alias }}.wf_cnv.vcf.gz | VCF file with the CNV for the sample. | per-sample |
 | ClinVar variant VCF | {{ alias }}.wf_snp_clinvar.vcf.gz | VCF file with ClinVar annotations. | per-sample |
-| Modified bases BEDMethyl | {{ alias }}.wf_mods.bedmethyl.gz | BED file with the aggregated modification counts for the sample. | per-sample |
-| Modified bases BEDMethyl (haplotype 1) | {{ alias }}.wf_mods.1.bedmethyl.gz | BED file with the aggregated modification counts for haplotype 1 of the sample. | per-sample |
-| Modified bases BEDMethyl (haplotype 2) | {{ alias }}.wf_mods.2.bedmethyl.gz | BED file with the aggregated modification counts for haplotype 2 of the sample. | per-sample |
+| Modified bases bedMethyl | {{ alias }}.wf_mods.bedmethyl.gz | BED file with the aggregated modification counts for the sample. | per-sample |
+| Modified bases bedMethyl (haplotype 1) | {{ alias }}.wf_mods.1.bedmethyl.gz | BED file with the aggregated modification counts for haplotype 1 of the sample. | per-sample |
+| Modified bases bedMethyl (haplotype 2) | {{ alias }}.wf_mods.2.bedmethyl.gz | BED file with the aggregated modification counts for haplotype 2 of the sample. | per-sample |
+| 5mC bigWig | {{ alias }}.wf_mods.5mC.bw | bigWig for visualisation of aggregated 5mC modification counts. | per-sample |
+| 5mC bigWig (haplotype 1) | {{ alias }}.wf_mods.1-5mC.bw | bigWig for visualisation of aggregated 5mC modification counts for haplotype 1 of the sample. | per-sample |
+| 5mC bigWig (haplotype 2) | {{ alias }}.wf_mods.2-5mC.bw | bigWig for visualisation of aggregated 5mC modification counts for haplotype 2 of the sample. | per-sample |
 | Short tandem repeat VCF | {{ alias }}.wf_str.vcf.gz | VCF file with the STR sites for the sample. | per-sample |
 | Alignment file | {{ alias }}.cram | CRAM or BAM file with the aligned reads for the sample, generated when the input file is unaligned. | per-sample |
 | Alignment file index | {{ alias }}.cram.crai | The index of the resulting CRAM or BAM file with the reads for the sample, generated when the input file is unaligned. | per-sample |
