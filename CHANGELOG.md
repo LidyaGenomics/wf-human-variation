@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v2.8.0]
+This minor release of wf-human-variation updates [modkit](https://github.com/nanoporetech/modkit) to improve the performance of modkit pileup processes for the base modifications subworkflow.
+On our HG002 dataset, the per-chromosome `modkit_phase` processes run 10x faster on average while still returning the same base modifications, with some minor differences to the score and count columns.
+The base modification subworkflow now also outputs bigWig files for more efficient downstream visualisation of 5mC calls.
+This version of the workflow may affect base modification results but variant calls in the other subworkflows are not affected.
+Additionally, this release of wf-human-variation updates the Clinvar database for more recent annotations and fixes a misleading error message about basecaller model detection when in fact the input data coverage is below threshold.
+
+Users of the `--mod` base modification subworkflow are recommended to adopt this release to benefit from the performance improvement.
 
 ### Changed
-- Updated to modkit v0.6.1 to improve performance of modkit pileup processes. `modkit_phase` processes run 10x faster on average.
+- Updated to [modkit v0.6.1](https://github.com/nanoporetech/modkit/releases/tag/v0.6.1) to improve performance of modkit pileup processes.
   - When running with `--mod --phased`, modkit and wf-human-variation no longer outputs "ungrouped" modification counts. Instead, the `{{ alias }}.wf_mods.bedmethyl.gz` will contain counts tabulated from all records.
 - Updated to wf-template v5.7.0 to maintain compliance with our latest wf-template standard, changing:
   - Pipeline overview now appears before pipeline parameters in README.
@@ -15,9 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fastcat FASTQ pre-processing program has been updated to 0.24.2, it is more robust to malformed FASTQ input.
   - CHANGELOG to be compliant with our formatting rules.
 - The error when an input file has insufficient coverage for analysis and will not be processed by the workflow has been made more obvious in the log.
-- Cleaned up syntax for optional outputs defined in common.nf (@robsyme, #296), and other out-of-spec syntax preventing parsing by the Nextflow language server.
 - ClinVar database updated to version 20260114.
+- Cleaned up syntax for optional outputs defined in common.nf (@robsyme, #296), and other out-of-spec syntax preventing parsing by the Nextflow language server.
+- Clarified in the Pipeline Overview that the workflow conducts alignment automatically where appropriate.
 ### Fixed
+- Reduced fatal memory errors ("Error: 137") encountered during the `sample_probs` process of the `--mod` subworkflow by increasing the memory allocation.
 - `cat_haplotagged_contigs` re-run on resume unnecessarily (@raonyguimaraes, #295)
 - Misleading "Input data error" implying the basecalling model could not be detected from an input when actually the input was discarded for having a depth below the `bam_min_coverage` threshold.
 ### Added

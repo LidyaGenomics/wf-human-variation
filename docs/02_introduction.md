@@ -13,7 +13,7 @@ This pipeline performs the steps of the four pipelines simultaneously and the re
 way as they would have been had the pipelines been run separately.
 
 <figure>
-<img src="docs/images/wf-human-variation.drawio.png" alt="wf-human-variation overview schematic."/>
+<img src="docs/images/wf-human-variation.drawio.svg" alt="wf-human-variation overview schematic."/>
 <figcaption>Schematic depicting wf-human-variation workflow.</figcaption>
 </figure>
 

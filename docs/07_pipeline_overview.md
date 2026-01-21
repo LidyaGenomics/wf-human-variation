@@ -15,9 +15,13 @@ The workflow relies on two primary input files:
 1. A reference genome in [FASTA format](https://www.ncbi.nlm.nih.gov/genbank/fastaformat/)
 2. Sequencing data for the sample in the form of a single [BAM file](https://samtools.github.io/hts-specs/SAMv1.pdf) or a folder of BAM files, either aligned or unaligned.
 
-When analysing human data, we recommend using [human_g1k_v37.fasta.gz](https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/ref/human_g1k_v37.fasta.gz) or [GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz](https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/ref/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz). For more information see [this blog post](https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use) which outlines potential pitfalls with the various flavours of human references.
+When analysing human data, we strongly recommend using [human_g1k_v37.fasta.gz](https://ont-open-data.s3.amazonaws.com/references/human/G1Kv37/human_g1k_v37.fasta.gz) or [GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz](https://ont-open-data.s3.amazonaws.com/references/human/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz).
+The workflow is tested with these references only, other human references may cause the workflow to terminate with an error.
+For more information see [this blog post](https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use) which outlines potential pitfalls with the various flavours of human references.
 
 The input BAM file can be generated using the [wf-basecalling](https://github.com/epi2me-labs/wf-basecalling/) workflow, which is up to date with the current dorado releases and models.
+The workflow supports aligned and unaligned BAM inputs.
+The workflow will automatically conduct alignment if the input BAM contains unaligned reads (*i.e.* uBAM), or if the reference genome provided does not match the sequence header found in the BAM.
 
 ### 2. Data QC and pre-processing
 The workflow starts by performing multiple checks of the input BAM file, as well as computing:

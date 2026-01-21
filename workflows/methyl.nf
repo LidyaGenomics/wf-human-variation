@@ -3,7 +3,7 @@ process sample_probs {
     label "wf_human_mod"
     // Using 4 threads on a 90X takes ~30sec to complete
     cpus 4
-    memory { 8.GB * task.attempt - 1.GB }
+    memory { 15.GB * task.attempt - 1.GB }
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
