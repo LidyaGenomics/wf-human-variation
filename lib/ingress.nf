@@ -588,7 +588,7 @@ process fastcat {
     label "ingress"
     label "wf_common"
     cpus 4
-    memory "2 GB"
+    memory "8 GB"
     input:
         tuple val(meta), path(input_src, stageAs: "input_src")
         val fcargs
@@ -698,8 +698,8 @@ process validateIndex {
 process mergeBams {
     label "ingress"
     label "wf_common"
-    cpus 3
-    memory "4 GB"
+    cpus 4
+    memory "8 GB"
     input: tuple val(meta), path("input_bams/reads*.bam")
     output: tuple val(meta), path("reads.bam"), path("reads.bam.bai")
     script:
@@ -716,7 +716,7 @@ process catSortBams {
     label "ingress"
     label "wf_common"
     cpus 4
-    memory "4 GB"
+    memory "8 GB"
     input: tuple val(meta), path("input_bams/reads*.bam")
     output: tuple val(meta), path("reads.bam"), path("reads.bam.bai")
     script:
@@ -731,8 +731,8 @@ process catSortBams {
 process sortBam {
     label "ingress"
     label "wf_common"
-    cpus 3
-    memory "4 GB"
+    cpus 4
+    memory "8 GB"
     input: tuple val(meta), path("reads.bam")
     output: tuple val(meta), path("reads.sorted.bam"), path("reads.sorted.bam.bai")
     script:
@@ -746,8 +746,8 @@ process sortBam {
 process bamstats {
     label "ingress"
     label "wf_common"
-    cpus 3
-    memory "4 GB"
+    cpus 4
+    memory "8 GB"
     input:
         tuple val(meta), path("reads.bam"), path("reads.bam.bai")
         val bsargs
@@ -1239,7 +1239,7 @@ process samtools_index {
     cpus 4
     label "ingress"
     label "wf_common"
-    memory 4.GB
+    memory 8.GB
     input:
         tuple val(meta), path("reads.bam")
     output:

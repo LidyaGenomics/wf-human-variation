@@ -1,6 +1,6 @@
 def longphase_memory = [8.GB, 32.GB, 56.GB]
 def whatshap_memory = [4.GB, 8.GB, 12.GB]
-def haptag_memory = [4.GB, 8.GB, 12.GB]
+def haptag_memory = [8.GB, 12.GB, 16.GB]
 def aggregate_memory = [4.GB, 8.GB, 16.GB]
 
 // As of Clair3 v1.0.6, set `--min_snp_af` and `--min_indel_af` to 0 with `--vcf_fn`.
@@ -74,8 +74,8 @@ process make_chunks {
 process pileup_variants {
     // Calls variants per region ("chunk") using pileup network.
     label "wf_human_snp"
-    cpus 1
-    memory { ["3.6 GB", "7 GB", "14 GB"][task.attempt - 1] }  // CW-6182
+    cpus { ["1", "1", "2"][task.attempt - 1] }
+    memory { ["4 GB", "8 GB", "16 GB"][task.attempt - 1] }  // CW-6182
     errorStrategy 'retry'
     maxRetries 2
     input:
@@ -195,7 +195,7 @@ process phase_contig {
     //   but adds the VCF as it is now tagged with phasing information
     //   used later in the full-alignment model
     label "longphase"
-    cpus 4
+    cpus { task.attempt < 3 ? 4 : 8 }
     memory { longphase_memory[task.attempt - 1] }
     maxRetries 2
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
@@ -225,7 +225,7 @@ process phase_contig {
 process cat_haplotagged_contigs {
     label "wf_human_snp"
     cpus 4
-    memory 15.GB // cat should not need this, but weirdness occasionally strikes
+    memory 16.GB // cat should not need this, but weirdness occasionally strikes
     input:
         tuple val(xam_meta), path(contig_bams) // intermediate input always BAM here
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -335,8 +335,8 @@ process evaluate_candidates {
     // Run "full alignment" network for variants in a candidate bed file.
     // phased_bam just references the input BAM as it no longer contains phase information.
     label "wf_human_snp"
-    cpus 1
-    memory { ["3.6 GB", "7 GB", "29 GB"][task.attempt - 1] }  // CW-5461, CW-6182
+    cpus { task.attempt < 3 ? 1 : 4 }
+    memory { [4.GB, 8.GB, 32.GB][task.attempt - 1] }  // CW-5461, CW-6182
     errorStrategy 'retry'
     maxRetries 2
 
@@ -464,7 +464,7 @@ process merge_pileup_and_full_vars{
 process post_clair_phase_contig {
     // Phase VCF for a contig
     // CW-2383: now uses base image to allow phasing of both snps and indels
-    cpus 1
+    cpus { task.attempt < 3 ? 1 : 2 }
     // Define memory from phasing tool and number of attempt
     memory { whatshap_memory[task.attempt - 1] }
     maxRetries 2
@@ -601,7 +601,7 @@ process aggregate_all_variants{
 process refine_with_sv {
     label "wf_human_snp"
     cpus 4
-    memory { 8.GB * task.attempt - 1.GB }
+    memory { 8.GB * task.attempt }
     maxRetries 1
     errorStrategy {task.exitStatus in [1,137,140] ? 'retry' : 'finish'}
 
@@ -680,6 +680,8 @@ process output_snp {
     // publish inputs to output directory
     label "wf_human_snp"
     publishDir "${params.out_dir}", mode: 'copy', pattern: "*"
+    cpus 1
+    memory 2.GB
     input:
         file fname
     output:
@@ -694,6 +696,7 @@ process output_snp {
 process getVersions {
     label "wf_human_snp"
     cpus 1
+    memory 2.GB
     output:
         path "versions.txt"
     script:
@@ -706,6 +709,7 @@ process getVersions {
 process vcfStats {
     label "wf_human_snp"
     cpus 2
+    memory 4.GB
     input:
         tuple val(xam_meta), path(vcf), path(index)
     output:
@@ -719,7 +723,7 @@ process vcfStats {
 
 process makeReport {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 16.GB
     input:
         tuple val(xam_meta), path(vcfstats)
@@ -760,6 +764,8 @@ process makeReport {
 // This saves us passing around tuples of val(inside) and path(outside).
 process lookup_clair3_model {
     label "wf_human_snp"
+    cpus 1
+    memory 2.GB
     input:
         path("lookup_table")
         val basecall_model

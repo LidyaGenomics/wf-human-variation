@@ -3,7 +3,7 @@ process sample_probs {
     label "wf_human_mod"
     // Using 4 threads on a 90X takes ~30sec to complete
     cpus 4
-    memory { 15.GB * task.attempt - 1.GB }
+    memory { 16.GB * task.attempt }
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
@@ -22,7 +22,7 @@ process sample_probs {
 process modkit {
     label "wf_human_mod"
     cpus params.modkit_threads
-    memory {(1.GB * params.modkit_threads * task.attempt) + 3.GB}
+    memory {(1.GB * params.modkit_threads * task.attempt) + 4.GB}
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
@@ -51,7 +51,7 @@ process modkit_phase {
     label "wf_human_mod"
     cpus params.modkit_threads
     // Phasing is a bit more greedy for memory. Use 2.GB/core + buffer.
-    memory {(2.GB * params.modkit_threads * task.attempt) + 3.GB}
+    memory {(2.GB * params.modkit_threads * task.attempt) + 4.GB}
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
@@ -114,7 +114,7 @@ process concat_bedmethyl {
 process modkit_tobigwig {
     label "wf_human_mod"
     cpus 4
-    memory 2.GB
+    memory 8.GB
     input:
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
         tuple val(meta), val(group), path(bedmethyl), val(mod)

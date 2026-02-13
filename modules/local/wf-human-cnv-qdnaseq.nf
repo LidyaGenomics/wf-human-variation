@@ -1,7 +1,7 @@
 // fix_vcf was unglued to avoid installing base deps in CNV container
 process callCNV {
     label "wf_cnv"
-    cpus 1
+    cpus { task.attempt < 2 ? 2 : 4 }
     memory { 16.GB * task.attempt }
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
@@ -36,6 +36,7 @@ process callCNV {
 process getVersions {
     label "wf_cnv"
     cpus 1
+    memory 2.GB
     output:
         path "versions.txt"
     script:
@@ -50,7 +51,7 @@ process getVersions {
 
 process makeReport {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 12.GB
     input:
         path(read_stats)

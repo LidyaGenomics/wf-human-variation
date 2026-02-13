@@ -147,7 +147,7 @@ process merge_tsv {
 
 process make_report {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 16.GB
     input:
         tuple val(xam_meta), path(vcf), path(vcf_idx)
@@ -189,6 +189,7 @@ process make_report {
 process getVersions {
     label "wf_human_str"
     cpus 1
+    memory 2.GB
     output:
         path "versions.txt"
     script:
@@ -208,6 +209,8 @@ process output_str {
     // publish inputs to output directory
     label "wf_human_str"
     publishDir "${params.out_dir}", mode: 'copy', pattern: "*"
+    cpus 1
+    memory 2.GB
     input:
         path fname
     output:

@@ -2,6 +2,7 @@
 process publish_geneyx {
     publishDir "${params.out_dir}/integrations/geneyx/", mode: 'copy', pattern: "*"
     cpus 2
+    memory 4.GB
 
     input:
         tuple val(meta), path('snv.vcf.gz'), path('snv.vcf.gz.tbi')
@@ -38,6 +39,7 @@ process publish_geneyx {
 process publish_fabric {
     publishDir "${params.out_dir}/integrations/fabric/", mode: 'copy', pattern: "*"
     cpus 2
+    memory 4.GB
 
     input:
         tuple val(alias), path(vcfs), path(tbis)

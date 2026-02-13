@@ -29,6 +29,7 @@ process callCNV {
 
 process bgzip_and_index_vcf {
     cpus 1
+    memory 2.GB
     input:
         tuple val(xam_meta), path(spectre_vcf)
     output:
@@ -44,6 +45,7 @@ process bgzip_and_index_vcf {
 process getVersions {
     label "spectre"
     cpus 1
+    memory 2.GB
     output:
         path "versions.txt"
     script:
@@ -68,7 +70,7 @@ process add_snp_tools_to_versions {
 
 process makeReport {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 12.GB
     input:
         path "versions/*"

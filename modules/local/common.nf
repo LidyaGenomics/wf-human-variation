@@ -1,7 +1,7 @@
 //NOTE grep MOSDEPTH_TUPLE if changing output tuple
 process mosdepth {
     cpus 4
-    memory {4.GB * task.attempt}
+    memory {4.GB * (task.attempt + 1)}
     maxRetries 2
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
@@ -72,7 +72,7 @@ process mosdepth {
 process readStats {
     label "wf_common"
     cpus 8
-    memory 4.GB
+    memory 8.GB
     input:
         tuple path(xam), path(xam_idx), val(xam_meta)
         path target_bed
@@ -119,6 +119,8 @@ process readStats {
 // decoupling the publish from the process steps.
 process publish_artifact {
     publishDir "${params.out_dir}", mode: 'copy', pattern: "*"
+    cpus 1
+    memory 2.GB
     input:
         file fname
     output:
@@ -186,7 +188,7 @@ process eval_downsampling {
 
 process downsampling {
     cpus 4
-    memory 4.GB
+    memory 8.GB
     input:
         tuple path(xam), path(xam_idx), val(xam_meta)
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
@@ -245,7 +247,7 @@ process get_region_coverage {
 // Make bam QC reporting.
 process failedQCReport  {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 12.GB
     input: 
         tuple path(xam),
@@ -325,7 +327,7 @@ process failedQCReport  {
 // Alignment report
 process makeAlignmentReport {
     label "wf_common"
-    cpus 1
+    cpus 2
     memory 12.GB
     input: 
         tuple path(xam),
@@ -398,6 +400,7 @@ process makeAlignmentReport {
 
 process getVersions {
     cpus 1
+    memory 2.GB
     output:
         path "versions.txt"
     script:
@@ -494,7 +497,7 @@ process sift_clinvar_vcf {
 
 process concat_vcfs {
     cpus 2
-    memory 3.GB
+    memory 4.GB
     input:
         tuple val(xam_meta), path (vcfs_artifacts, stageAs: "vcfs/*")
         val(output_label)
@@ -613,6 +616,8 @@ process combine_metrics_json {
 process output_cnv {
     // publish inputs to output directory
     publishDir "${params.out_dir}", mode: 'copy', pattern: "*"
+    cpus 1
+    memory 2.GB
     input:
         path fname
     output:
@@ -634,6 +639,7 @@ process infer_sex {
     // to account for the presence of pseudo-X region being covered
     // in the Y-chromosome.
     cpus 1
+    memory 2.GB
     input:
         path "mosdepth.summary.txt"
     output:
