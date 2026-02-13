@@ -1,9 +1,10 @@
 #!/bin/bash
 # Mirror ONT pipeline images from Docker Hub to Huawei SWR
-# Run from a machine with Docker that can access both registries.
+# Uses crane for reliable registry-to-registry copy (no Docker daemon quirks).
 #
 # Prerequisites:
 #   docker login swr.tr-west-1.myhuaweicloud.com -u <org>@<ak> -p <login_key>
+#   (crane reads credentials from ~/.docker/config.json)
 #
 # Usage:
 #   bash mirror_images_to_swr.sh
@@ -11,6 +12,15 @@
 set -euo pipefail
 
 SWR_REGISTRY="swr.tr-west-1.myhuaweicloud.com/lidyagenomics"
+
+# Install crane if not present
+if ! command -v crane &>/dev/null; then
+    echo "Installing crane..."
+    curl -sL "https://github.com/google/go-containerregistry/releases/latest/download/go-containerregistry_Linux_x86_64.tar.gz" | tar -xz -C /tmp crane
+    CRANE="/tmp/crane"
+else
+    CRANE="crane"
+fi
 
 # Image name -> tag mappings from base.config
 declare -A IMAGES=(
@@ -28,10 +38,9 @@ declare -A IMAGES=(
 
 for SOURCE_IMAGE in "${!IMAGES[@]}"; do
     TAG="${IMAGES[$SOURCE_IMAGE]}"
-    # Extract image name without the org prefix (e.g., ontresearch/wf-cnv -> wf-cnv)
     IMAGE_NAME="${SOURCE_IMAGE#ontresearch/}"
 
-    SOURCE="${SOURCE_IMAGE}:${TAG}"
+    SOURCE="docker.io/${SOURCE_IMAGE}:${TAG}"
     TARGET="${SWR_REGISTRY}/${IMAGE_NAME}:${TAG}"
 
     echo "============================================"
@@ -39,9 +48,8 @@ for SOURCE_IMAGE in "${!IMAGES[@]}"; do
     echo "       To: ${TARGET}"
     echo "============================================"
 
-    docker pull "${SOURCE}"
-    docker tag "${SOURCE}" "${TARGET}"
-    docker push "${TARGET}"
+    # crane copies directly between registries, no local Docker daemon involved
+    "${CRANE}" copy --platform linux/amd64 "${SOURCE}" "${TARGET}"
 
     echo "Done: ${IMAGE_NAME}"
     echo ""
