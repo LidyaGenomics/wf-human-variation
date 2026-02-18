@@ -1,5 +1,5 @@
-// This module defined the basecall model from the analysis and allows to
-// override it, if the user asks so.
+// This module detects the basecall model from the input data.
+// BAM-detected model takes priority; --override_basecaller_cfg is used as fallback.
 
 workflow detect_basecall_model {
     take:
@@ -93,24 +93,37 @@ workflow detect_basecall_model {
                     }
                 }
         
-        if (params.override_basecaller_cfg) {
-            metamap_basecaller_cfg
-                .subscribe onNext: {log.info "Detected basecaller_model: ${it}"}, onComplete: {log.warn "Overriding basecaller_model: ${params.override_basecaller_cfg}"}
-            basecaller_cfg = Channel.of(params.override_basecaller_cfg)
-            // Update override basecall model in meta
-            bam_channel = bam_channel
-            | map{
-                xam, xai, meta ->
-                [xam, xai, meta + [basecall_models: [params.override_basecaller_cfg]]]
+        // BAM-detected model takes priority; --override_basecaller_cfg is fallback
+        basecaller_cfg = metamap_basecaller_cfg
+            | collect
+            | map { models ->
+                if (models.size() == 1) {
+                    if (params.override_basecaller_cfg) {
+                        log.info "Detected basecaller_model from BAM header: ${models[0]}; --override_basecaller_cfg will be ignored."
+                    } else {
+                        log.info "Detected basecaller_model: ${models[0]}"
+                    }
+                    return models[0]
+                } else if (params.override_basecaller_cfg) {
+                    if (models.size() == 0) {
+                        log.info "No basecaller model in BAM headers, falling back to --override_basecaller_cfg: ${params.override_basecaller_cfg}"
+                    } else {
+                        log.warn "Multiple basecaller models detected: ${models.join(', ')}. Using --override_basecaller_cfg: ${params.override_basecaller_cfg}"
+                    }
+                    return params.override_basecaller_cfg
+                }
+                // Error cases (0 or >1 models without param) are handled by the validation block above
+                return null
             }
-        }
-        else {
-            basecaller_cfg = metamap_basecaller_cfg
-                | map { log.info "Detected basecaller_model: ${it}"; it }
-                | ifEmpty(params.override_basecaller_cfg)
-                | map { log.info "Using basecaller_model: ${it}"; it }
-                | first  // unpack from list
-        }
+            | filter { it != null }
+            | first
+
+        // Update meta with the resolved model
+        bam_channel = bam_channel
+            | combine(basecaller_cfg)
+            | map { xam, xai, meta, cfg ->
+                [xam, xai, meta + [basecall_models: [cfg]]]
+            }
 
     emit:
         bam_channel = bam_channel
