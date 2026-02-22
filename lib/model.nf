@@ -94,8 +94,11 @@ workflow detect_basecall_model {
                 }
         
         // BAM-detected model takes priority; --override_basecaller_cfg is fallback
+        // NOTE: collect on an empty channel emits nothing (not []),
+        //       so ifEmpty([]) is required to handle the 0-models case.
         basecaller_cfg = metamap_basecaller_cfg
             | collect
+            | ifEmpty([])
             | map { models ->
                 if (models.size() == 1) {
                     if (params.override_basecaller_cfg) {
