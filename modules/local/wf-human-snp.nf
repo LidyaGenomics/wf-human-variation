@@ -225,7 +225,12 @@ process phase_contig {
 process cat_haplotagged_contigs {
     label "wf_human_snp"
     cpus 4
-    memory 16.GB // cat should not need this, but weirdness occasionally strikes
+    // cat should not need this, but weirdness occasionally strikes. Writing CRAM from
+    // a large ONT WGS (130 GB input, MM/ML-tagged long reads) was OOM-killed at 16 GB,
+    // so step up on 137/140 instead of failing a run hours in.
+    memory { [16.GB, 32.GB, 64.GB][task.attempt - 1] }
+    maxRetries 2
+    errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
     input:
         tuple val(xam_meta), path(contig_bams) // intermediate input always BAM here
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
